@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Vinyl Store</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    input { margin: 5px; padding: 5px; }
+    button { padding: 5px 10px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+    th { background: black; color: white; }
+  </style>
+</head>
+<body>
+
+<h1>Vinyl Store Inventory</h1>
+
+<h3>Add Record</h3>
+<input id="title" placeholder="Title">
+<input id="year" type="number" placeholder="Year">
+<input id="price" type="number" placeholder="Price">
+<input id="stock" type="number" placeholder="Stock">
+<input id="artist" type="number" placeholder="Artist ID">
+<input id="genre" type="number" placeholder="Genre ID">
+<input id="supplier" type="number" placeholder="Supplier ID">
+<button onclick="addRecord()">Add</button>
+
+<h3>Records</h3>
+<button onclick="loadRecords()">Load Records</button>
+
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Title</th>
+      <th>Year</th>
+      <th>Price</th>
+      <th>Stock</th>
+      <th>Delete</th>
+    </tr>
+  </thead>
+  <tbody id="tableBody"></tbody>
+</table>
+
+<script>
+
+const API = "http://localhost:3000";
+
+// Load Records
+function loadRecords() {
+  fetch(API + "/records")
+    .then(res => res.json())
+    .then(data => {
+      const table = document.getElementById("tableBody");
+      table.innerHTML = "";
+
+      data.forEach(record => {
+        table.innerHTML += `
+          <tr>
+            <td>${record.record_id}</td>
+            <td>${record.title}</td>
+            <td>${record.release_year}</td>
+            <td>${record.price}</td>
+            <td>${record.stock}</td>
+            <td>
+              <button onclick="deleteRecord(${record.record_id})">Delete</button>
+            </td>
+          </tr>
+        `;
+      });
+    });
+}
+
+// Add Record
+function addRecord() {
+  const newRecord = {
+    title: document.getElementById("title").value,
+    release_year: document.getElementById("year").value,
+    price: document.getElementById("price").value,
+    stock: document.getElementById("stock").value,
+    artist_id: document.getElementById("artist").value,
+    genre_id: document.getElementById("genre").value,
+    supplier_id: document.getElementById("supplier").value
+  };
+
+  fetch(API + "/records", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(newRecord)
+  })
+  .then(res => res.json())
+  .then(() => {
+    loadRecords();
+  });
+}
+
+// Delete Record
+function deleteRecord(id) {
+  fetch(API + "/records/" + id, {
+    method: "DELETE"
+  })
+  .then(() => loadRecords());
+}
+
+// Auto load when page opens
+loadRecords();
+
+</script>
+
+</body>
+</html>
+<script>
+async function addRecord() {
+  const data = {
+    title: document.getElementById("title").value,
+    release_year: document.getElementById("year").value,
+    price: document.getElementById("price").value,
+    stock: document.getElementById("stock").value,
+    artist_id: document.getElementById("artist").value,
+    genre_id: document.getElementById("genre").value,
+    supplier_id: document.getElementById("supplier").value
+  };
+
+  await fetch("http://localhost:3000/records", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  });
+
+  loadRecords();
+}
+
+async function loadRecords() {
+  const res = await fetch("http://localhost:3000/records");
+  const records = await res.json();
+
+  const table = document.getElementById("tableBody");
+  table.innerHTML = "";
+
+  records.forEach(r => {
+    table.innerHTML += `
+      <tr>
+        <td>${r.record_id}</td>
+        <td>${r.title}</td>
+        <td>${r.release_year}</td>
+        <td>${r.price}</td>
+        <td>${r.stock}</td>
+      </tr>
+    `;
+  });
+}
+</script>
